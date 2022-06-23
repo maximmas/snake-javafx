@@ -20,10 +20,10 @@ import java.io.IOException;
 
 public class GameApplication extends Application {
 
-
-    int totalRowsNumber = 10;
-    int totalColsNumber = 10;
     int fieldGrid = 10; // = rows and cols
+
+    int totalRowsNumber = fieldGrid;
+    int totalColsNumber = fieldGrid;
 
     int cellSizePx = 40; //px
     int fieldPaddingPx = 15; //px
@@ -32,41 +32,54 @@ public class GameApplication extends Application {
     int initialSnakePosXIndex = 4;
     int initialSnakePosYIndex = 5;
 
+    int maxPossibleFruits = totalColsNumber * totalRowsNumber - snakeBodySize;
+    int fruitPosXIndex[]=new int[maxPossibleFruits];
+    int fruitPosYIndex[]=new int[maxPossibleFruits];
+    int totalFruits = 0;
+
     int snakeBodyXIndex[]=new int[fieldGrid];
     int snakeBodyYIndex[]=new int[fieldGrid];
 
-    int fruitPosXIndex[]=new int[fieldGrid];
-    int fruitPosYIndex[]=new int[fieldGrid];
-
-    int maxPossibleFruits = totalColsNumber * totalRowsNumber;
-    int totalFruits = 0;
-
-    int fruitsGenerationSpeed = 1000;
-    int snakeMovementSpeed = 1000;
-    int speed = 1000;
-    Thread fruitsProcess;
-    Thread snakeProcess;
-
+    /**
+     *  Флаг активности игры
+     */
     boolean isAlive = true;
 
+    /**
+     *  Результат игры - сколько фруктов съедено
+     */
+    int gameScore = 0;
+
+    /**
+     *  Время игры
+     *
+     */
+    int timer = 100;
+
+    /**
+     *  Направление движения змеи
+     */
     String snakeMovementDirection = "right";
 
     GridPane field;
 
+    Thread fruitsProcess;
+    Thread snakeProcess;
+    Thread timerProcess;
 
+    int timerDelay = 500;  // ms
+    int snakeDelay = 1000;
+    int fruitsDelay = 5000;
 
     @Override
     public void start(Stage stage) throws IOException {
-
-//        FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("game.fxml"));
-//        Scene scene = new Scene(fxmlLoader.load(), 400  , 400);
 
         int fieldWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2);
         int fieldHeightPx = (totalRowsNumber * cellSizePx) + (fieldPaddingPx * 2);
 
         /***************************************/
         field = new GridPane();
-        field.setPadding(new Insets(fieldPaddingPx, fieldPaddingPx, fieldPaddingPx, fieldPaddingPx));
+        field.setPadding(new Insets(fieldPaddingPx, fieldPaddingPx , fieldPaddingPx, fieldPaddingPx));
         field.getStyleClass().addAll("container");
 
         for (int i = 0; i < totalColsNumber; i++) {
@@ -92,20 +105,19 @@ public class GameApplication extends Application {
             }
         }
 
+//        FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("game.fxml"));
+//        Scene scene1 = new Scene(fxmlLoader.load(), fieldWidthPx  , fieldHeightPx);
 
-        Scene scene = new Scene(field, fieldWidthPx, fieldHeightPx);
+        Scene scene = new Scene(field, fieldWidthPx + 200 , fieldHeightPx);
 
         setKeysHandler(scene);
-
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
-
-        stage.setTitle("Hello!");
+        stage.setTitle("Snake Game");
         stage.setScene(scene);
         stage.show();
-
          runGame();
-
     }
+
 
     private void runGame(){
 
@@ -113,43 +125,56 @@ public class GameApplication extends Application {
         showSnake();
         showFruits();
 
+
+        timerProcess = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                while(timer > 0 && isAlive){
+                    timer--;
+                    System.out.println("Timer: " +  timer);
+                    try{
+                        Thread.sleep(timerDelay);
+                    } catch(Exception e){};
+                }
+                isAlive = false;
+                System.out.println("Time is out! ");
+            }
+        });
+        timerProcess.start();
+
+
+
         fruitsProcess = new Thread(new Runnable() {
             @Override
             public void run() {
 
-                while(isAlive){
-//                        checkFood();
+                while(isAlive && timer > 0){
                         showFruits();
-
                     try{
-                        Thread.sleep(fruitsGenerationSpeed);
+                        Thread.sleep(fruitsDelay);
                     } catch(Exception e){};
                 }
+
             }
         });
         fruitsProcess.start();
-
 
         snakeProcess = new Thread(new Runnable() {
 
             @Override
             public void run() {
-//                int test = 0;
-                while(isAlive){
-//                    System.out.println(test);
-                     snakeMakeStep();
-//                    test++;
-//                    if(test > 20) isAlive = false;
 
+                while(isAlive && timer > 0){
+                     snakeMakeStep();
                     try{
-                        Thread.sleep(snakeMovementSpeed);
+                        Thread.sleep(snakeDelay);
                     } catch(Exception e){};
                 }
                     System.out.println("End game !");
             }
         });
         snakeProcess.start();
-
     }
 
 
@@ -157,7 +182,6 @@ public class GameApplication extends Application {
 
         scene.setOnKeyPressed(e -> {
                         KeyCode key=e.getCode();
-                        System.out.println("key: " + key);
 
                         if(key.equals(KeyCode.UP)) {
 
@@ -185,65 +209,131 @@ public class GameApplication extends Application {
 
                         if(key.equals(KeyCode.Q)) {
                             isAlive = false;
-                            System.out.println(snakeMovementDirection);
                         };
-                    });
 
+                    });
     }
 
     private void snakeMakeStep(){
 
         hideSnake();
 
+        int nextCellX = 0;
+         int  nextCellY = 0;
+
+        // меняем координаты головы в зависимости от направления
+        if(snakeMovementDirection == "up"){
+            nextCellX = snakeBodyXIndex[0];
+            nextCellY = snakeBodyYIndex[0] -1;
+        }
+
+        if(snakeMovementDirection == "down"){
+            nextCellX = snakeBodyXIndex[0];
+            nextCellY = snakeBodyYIndex[0] +1;
+        }
+
+        if(snakeMovementDirection == "right"){
+            nextCellX = snakeBodyXIndex[0]+1;
+            nextCellY = snakeBodyYIndex[0] ;
+       }
+
+        if(snakeMovementDirection == "left"){
+            nextCellX = snakeBodyXIndex[0]-1;
+            nextCellY = snakeBodyYIndex[0] ;
+        }
+
+        boolean isFruit = fruitEatHandler(nextCellX, nextCellY);
+
+        if (isFruit) {
+            snakeBodySize++;
+        }
+
         // сдвигаем ячейки от головы к хвосту
         // проходим все ячейки от хвоста к голове, кроме головы
         // зампсываем в текущую значение следующей
-        for(int  j = snakeBodySize-1; j > 0 ; j-- ){
+        // т.е. коорд головы -> в предголову и т.д.
+        for(int  j = snakeBodySize-1;  j > 0 ;  j-- ){
             snakeBodyXIndex[j] = snakeBodyXIndex[j-1];
             snakeBodyYIndex[j] = snakeBodyYIndex[j-1];
         }
 
-        // меняем координаты головы
-        if(snakeMovementDirection == "up"){
-            snakeBodyYIndex[0] = snakeBodyYIndex[0] -1;
-        }
-        if(snakeMovementDirection == "down"){
-            snakeBodyYIndex[0] = snakeBodyYIndex[0] + 1;
-        }
-        if(snakeMovementDirection == "right")
-        {
-            snakeBodyXIndex[0] = snakeBodyXIndex[0] + 1 ;
+        // меняем коорд головы
+        snakeBodyXIndex[0] = nextCellX;
+        snakeBodyYIndex[0] = nextCellY;
 
-        };
-        if(snakeMovementDirection == "left"){
-            snakeBodyXIndex[0] = snakeBodyXIndex[0] -1;
-
-        }
-        if (
-                (snakeBodyXIndex[0] > totalColsNumber || snakeBodyXIndex[0] < 1) ||
-                ( snakeBodyYIndex[0] > totalColsNumber  || snakeBodyYIndex[0] < 1) )
-        {
+        if ( isBorder()) {
             isAlive = false;
-            return;
         } else {
-            // рисуем по новым координатам
             showSnake();
         }
 
-
     }
+
+    /**
+     *  Проверка и обработка наезда на фрукт
+     *
+     * @return
+     */
+    private boolean fruitEatHandler(int snakeHeadX, int snakeHeadY){
+        boolean isFruit = false;
+
+
+        for (int i = 0; i < fruitPosXIndex.length; i++){
+
+            if (snakeHeadX == fruitPosXIndex[i] && snakeHeadY == fruitPosYIndex[i]){
+                System.out.println("is fruit");
+                isFruit = true;
+                 removeFruit(i);
+                 gameScore++;
+                 System.out.println("score: " + gameScore);
+            }
+        }
+        return isFruit;
+    }
+
+    /**
+     *  Удаление фрукта
+     *
+     * @param index
+     */
+    private void removeFruit(int index){
+        int fruitX = fruitPosXIndex[index];
+        int fruitY = fruitPosYIndex[index];
+        Node fruit = getCell(fruitX, fruitY);
+        if (fruit != null){
+            fruit.getStyleClass().remove("fruit");
+        }
+         fruitPosXIndex[index] = fruitPosYIndex[index] = 0;
+    }
+
+
+    /**
+     *  Проверка выхода за границу поля
+     *
+     * @return
+     */
+    private boolean isBorder(){
+         return
+                 (snakeBodyXIndex[0] > totalColsNumber || snakeBodyXIndex[0] < 1) ||
+                ( snakeBodyYIndex[0] > totalColsNumber  || snakeBodyYIndex[0] < 1);
+    }
+
 
     private void hideSnake(){
         for (int i = 0; i<snakeBodyXIndex.length; i++) {
             int x = snakeBodyXIndex[i];
             int y = snakeBodyYIndex[i];
             if(x > 0 && y > 0 ){
-                Node cell = getCell(x, y, field);
+                Node cell = getCell(x, y);
                 cell.getStyleClass().remove("on");
             }
         }
     }
 
+
+    /**
+     *  Вывод змеи
+     */
     private void showSnake(){
 
         for (int i = 0; i<snakeBodyXIndex.length; i++) {
@@ -251,54 +341,79 @@ public class GameApplication extends Application {
             int y = snakeBodyYIndex[i];
 
                 if( x > 0 &&  y > 0){
-                Node cell = getCell(x, y, field);
+                Node cell = getCell(x, y);
                 cell.getStyleClass().add("on");
             }
 
         }
     }
 
+    /**
+     *  Вывод фруктов
+     */
     private void showFruits() {
 
-        totalFruits++;
+        int x  = 0;
+        int y  = 0;
+
+        // ячейка занята змеей
+        boolean isCellSnake = true;
 
         //        rand = Min + (int)(Math.random() * ((Max - Min) + 1))
 
-        // генерируем новые координаты фрукта
-        int x = 1 + (int)(Math.random() * ((totalColsNumber -1) + 1));
-        int y = 1 + (int)(Math.random() * ((totalRowsNumber -1) + 1));
+        while(isCellSnake){
+            // генерируем новые координаты фрукта
+            x = 1 + (int)(Math.random() * ((totalColsNumber -1) + 1));
+            y = 1 + (int)(Math.random() * ((totalRowsNumber -1) + 1));
 
-        // если фруктов не макс кол-во - добавляем новый фрукт
-        if (totalFruits <= maxPossibleFruits - 1){
-            for (int i = 0; i < fruitPosXIndex.length; i++) {
+            isCellSnake = isSnake(x,y);
+        }
+
+
+        // если фруктов не макс кол-во - добавляем
+        //  координаты нового фрукта в массивы координат
+        if (totalFruits < maxPossibleFruits){
+
+            for (int i = 0;  i < fruitPosXIndex.length;  i++) {
                 if (fruitPosXIndex[i] == 0) {
                     fruitPosXIndex[i] = x;
                     fruitPosYIndex[i] = y;
+                    totalFruits++;
+                    break;
                 }
             }
         }
 
-       Node cell = getCell(x, y, field);
-
+       Node cell = getCell(x, y);
         int imageID = (int)(Math.random() * 11);
-
         String fruitClassName  = "fruit" + String.valueOf(imageID) ;
-
-        cell.getStyleClass().add(fruitClassName);
-
+        cell.getStyleClass().addAll( "fruit", fruitClassName);
     }
 
 
+    /**
+     *  Проверка, занята ли ячейка змеей
+     * @param x координата X ячейки
+     * @param y координата Y ячейки
+     * @return true - занята, false - нет
+     */
+    private boolean isSnake(int x, int y){
+        for (int i = 0; i<snakeBodyXIndex.length; i++) {
+          if(x == snakeBodyXIndex[i] && y == snakeBodyYIndex[i]){
+              return true;
+          }
+        }
+        return false;
+    }
 
     /**
      *  Получаем элемент ячейки по ее координатам
      *
      * @param rowIndex
      * @param columnIndex
-     * @param field
      * @return
      */
-    public Node getCell(final int columnIndex, final int rowIndex,  GridPane field) {
+    public Node getCell(final int columnIndex, final int rowIndex) {
 
         for (Node cell : field.getChildren()) {
             if(
@@ -321,8 +436,6 @@ public class GameApplication extends Application {
             snakeBodyYIndex[i] = initialSnakePosYIndex;
         }
     }
-
-
 
     public static void main(String[] args) {
         launch();
