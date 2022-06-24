@@ -1,6 +1,7 @@
 package com.game.snake;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -9,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -37,8 +39,8 @@ public class GameApplication extends Application {
     int fruitPosYIndex[]=new int[maxPossibleFruits];
     int totalFruits = 0;
 
-    int snakeBodyXIndex[]=new int[fieldGrid];
-    int snakeBodyYIndex[]=new int[fieldGrid];
+    int snakeBodyXIndex[]=new int[totalRowsNumber * totalColsNumber];
+    int snakeBodyYIndex[]=new int[totalRowsNumber * totalColsNumber];
 
     /**
      *  Флаг активности игры
@@ -54,7 +56,7 @@ public class GameApplication extends Application {
      *  Время игры
      *
      */
-    int timer = 100;
+    int timer = 200;
 
     /**
      *  Направление движения змеи
@@ -73,20 +75,24 @@ public class GameApplication extends Application {
 
     Stage primaryStage;
 
-    int stageWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2);
+    Label displayTimer;
+    Label displayScore;
+    Label displayEnd;
+
+    int stageWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2) + 200;
     int stageHeightPx = (totalRowsNumber * cellSizePx) + (fieldPaddingPx * 2);
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage primaryStage) throws IOException {
 
-        primaryStage = stage;
+        this.primaryStage = primaryStage;
 
         FXMLLoader menuLoader = new FXMLLoader(GameApplication.class.getResource("menu.fxml"));
         Scene menu = new Scene(menuLoader.load(), stageWidthPx  , stageHeightPx);
         MenuController menuController = menuLoader.getController();
         menuController.setApp(this);
        primaryStage.setScene(menu);
-        primaryStage.show();
+       primaryStage.show();
 
     }
 
@@ -98,7 +104,12 @@ public class GameApplication extends Application {
         GameController gameController = gameLoader.getController();
         gameController.setApp(this);
 
+        Group root = gameController.getRoot();
         field = gameController.getGameField();
+
+        displayTimer = gameController.getTimer();
+        displayScore = gameController.getScore();
+        displayEnd = gameController.getEnd();
 
         field.setPadding(new Insets(fieldPaddingPx, fieldPaddingPx , fieldPaddingPx, fieldPaddingPx));
         field.getStyleClass().addAll("container");
@@ -126,10 +137,12 @@ public class GameApplication extends Application {
             }
         }
 
-        Scene gameScene = new Scene(field, stageWidthPx ,stageHeightPx);
-        setKeysHandler(gameScene);
+        Scene gameScene = new Scene(root, stageWidthPx ,stageHeightPx);
+
         gameScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
-       primaryStage.setScene(gameScene);
+        primaryStage.setScene(gameScene);
+
+        keysPressHandler(gameScene);
 
     }
 
@@ -138,7 +151,7 @@ public class GameApplication extends Application {
         setInitialSnakePosition();
         showSnake();
         showFruits();
-
+        displayScore();
 
         timerProcess = new Thread(new Runnable() {
             @Override
@@ -146,17 +159,17 @@ public class GameApplication extends Application {
 
                 while(timer > 0 && isAlive){
                     timer--;
-                    System.out.println("Timer: " +  timer);
+                    displayTimer();
                     try{
                         Thread.sleep(timerDelay);
                     } catch(Exception e){};
                 }
                 isAlive = false;
-                System.out.println("Time is out! ");
+//                System.out.println("Time is out! ");
+                displayEnd();
             }
         });
         timerProcess.start();
-
 
 
         fruitsProcess = new Thread(new Runnable() {
@@ -185,37 +198,44 @@ public class GameApplication extends Application {
                         Thread.sleep(snakeDelay);
                     } catch(Exception e){};
                 }
-                    System.out.println("End game !");
+//                    System.out.println("End game !");
+                displayEnd();
+//                displayEnd.setText("Game over!");
             }
         });
         snakeProcess.start();
     }
 
 
-    private void setKeysHandler(Scene scene){
+    private void keysPressHandler(Scene scene){
+
+//        field.requestFocus();
 
         scene.setOnKeyPressed(e -> {
                         KeyCode key=e.getCode();
 
                         if(key.equals(KeyCode.UP)) {
-
+                    System.out.println("UP");
                             // змея не может поменять напраление движения на противоположное
                             if(snakeMovementDirection != "down" ) {
                                 snakeMovementDirection = "up";
                             }
                         };
                         if(key.equals(KeyCode.DOWN)) {
+                            System.out.println("Down");
                             if(snakeMovementDirection != "up" ) {
                                 snakeMovementDirection = "down";
                             }
                         };
                         if(key.equals(KeyCode.LEFT)) {
+                            System.out.println("Left");
                             if(snakeMovementDirection != "right" ) {
                                 snakeMovementDirection = "left";
                             }
 
                         };
                         if(key.equals(KeyCode.RIGHT)) {
+                            System.out.println("Right");
                             if(snakeMovementDirection != "left" ) {
                                 snakeMovementDirection = "right";
                             }
@@ -227,6 +247,36 @@ public class GameApplication extends Application {
 
                     });
     }
+
+
+    private void displayTimer(){
+        https://stackoverflow.com/questions/21083945/how-to-avoid-not-on-fx-application-thread-currentthread-javafx-application-th
+        Platform.runLater(new Runnable(){
+            @Override
+            public void run() {
+                displayTimer.setText(String.valueOf(timer));
+            }
+        });
+    }
+
+    private void displayScore(){
+        Platform.runLater(new Runnable(){
+            @Override
+            public void run() {
+                displayScore.setText(String.valueOf(gameScore));
+            }
+        });
+    }
+
+    private void displayEnd(){
+        Platform.runLater(new Runnable(){
+            @Override
+            public void run() {
+                displayEnd.setText("Game over !");
+            }
+        });
+    }
+
 
     private void snakeMakeStep(){
 
@@ -299,7 +349,7 @@ public class GameApplication extends Application {
                 isFruit = true;
                  removeFruit(i);
                  gameScore++;
-                 System.out.println("score: " + gameScore);
+                displayScore();
             }
         }
         return isFruit;

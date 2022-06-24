@@ -7,12 +7,39 @@
 <?import javafx.scene.control.Button?>
 
 <?import javafx.scene.layout.GridPane?>
-<GridPane
-        fx:id="gameField"
-        alignment="CENTER"
-          xmlns:fx="http://javafx.com/fxml"
-          fx:controller="com.game.snake.GameController">
-<!--<Label GridPane.rowIndex="0" GridPane.columnIndex="0">First</Label>-->
-</GridPane>
+<?import javafx.scene.layout.AnchorPane?>
+
+<?import javafx.scene.Group?>
+<?import javafx.scene.layout.HBox?>
+<Group fx:id="root" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+       fx:controller="com.game.snake.GameController">
+
+    <HBox>
+        <GridPane
+                fx:id="gameField"
+                alignment="CENTER"
+                xmlns:fx="http://javafx.com/fxml"
+        >
+        </GridPane>
+
+        <VBox alignment="TOP_LEFT" spacing="20.0">
+            <padding>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+            </padding>
+<!--            <Button text="Start game"/>-->
+            <HBox>
+                <Label>Score:</Label>
+                <Label fx:id="score"/>
+            </HBox>
+            <HBox>
+                <Label>Timer:</Label>
+                <Label fx:id="timer"/>
+            </HBox>
+            <Label fx:id="end"/>
+        </VBox>
+    </HBox>
+
+</Group>
+
 
 
