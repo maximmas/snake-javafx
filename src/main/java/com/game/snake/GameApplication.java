@@ -71,14 +71,35 @@ public class GameApplication extends Application {
     int snakeDelay = 1000;
     int fruitsDelay = 5000;
 
+    Stage primaryStage;
+
+    int stageWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2);
+    int stageHeightPx = (totalRowsNumber * cellSizePx) + (fieldPaddingPx * 2);
+
     @Override
     public void start(Stage stage) throws IOException {
 
-        int fieldWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2);
-        int fieldHeightPx = (totalRowsNumber * cellSizePx) + (fieldPaddingPx * 2);
+        primaryStage = stage;
 
-        /***************************************/
-        field = new GridPane();
+        FXMLLoader menuLoader = new FXMLLoader(GameApplication.class.getResource("menu.fxml"));
+        Scene menu = new Scene(menuLoader.load(), stageWidthPx  , stageHeightPx);
+        MenuController menuController = menuLoader.getController();
+        menuController.setApp(this);
+       primaryStage.setScene(menu);
+        primaryStage.show();
+
+    }
+
+    public void setGameScene() throws IOException {
+
+        FXMLLoader gameLoader = new FXMLLoader(GameApplication.class.getResource("game.fxml"));
+        gameLoader.load();
+
+        GameController gameController = gameLoader.getController();
+        gameController.setApp(this);
+
+        field = gameController.getGameField();
+
         field.setPadding(new Insets(fieldPaddingPx, fieldPaddingPx , fieldPaddingPx, fieldPaddingPx));
         field.getStyleClass().addAll("container");
 
@@ -92,7 +113,7 @@ public class GameApplication extends Application {
         }
 
         for (int i = 0; i < totalColsNumber; i++) {
-           for (int j = 0; j < totalRowsNumber; j++) {
+            for (int j = 0; j < totalRowsNumber; j++) {
                 Pane cell = new Pane();
                 cell.getStyleClass().add("cell");
                 if (i == 0) {
@@ -105,21 +126,14 @@ public class GameApplication extends Application {
             }
         }
 
-//        FXMLLoader fxmlLoader = new FXMLLoader(GameApplication.class.getResource("game.fxml"));
-//        Scene scene1 = new Scene(fxmlLoader.load(), fieldWidthPx  , fieldHeightPx);
+        Scene gameScene = new Scene(field, stageWidthPx ,stageHeightPx);
+        setKeysHandler(gameScene);
+        gameScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+       primaryStage.setScene(gameScene);
 
-        Scene scene = new Scene(field, fieldWidthPx + 200 , fieldHeightPx);
-
-        setKeysHandler(scene);
-        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
-        stage.setTitle("Snake Game");
-        stage.setScene(scene);
-        stage.show();
-         runGame();
     }
 
-
-    private void runGame(){
+    public void runGame(){
 
         setInitialSnakePosition();
         showSnake();
