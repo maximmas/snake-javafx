@@ -17,6 +17,7 @@
     <HBox>
         <GridPane
                 fx:id="gameField"
+                styleClass="container"
                 alignment="CENTER"
                 xmlns:fx="http://javafx.com/fxml"
         >
@@ -27,17 +28,16 @@
                 <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
             </padding>
 
-            <HBox>
+            <HBox styleClass="result">
                 <Label>Score:</Label>
-                <Label fx:id="score"/>
+                <Label fx:id="score" styleClass="value"/>
             </HBox>
 
-            <HBox>
+            <HBox styleClass="result">
                 <Label>Timer:</Label>
-                <Label fx:id="timer"/>
+                <Label fx:id="timer" styleClass="value"/>
             </HBox>
 
-            <Label fx:id="end"/>
         </VBox>
 
     </HBox>

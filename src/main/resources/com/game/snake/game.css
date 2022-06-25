@@ -1,6 +1,4 @@
 .container{
-    /*-fx-background-color: #aeaeae;*/
-
     -fx-background-fill: black, white ;
     -fx-background-insets: 0, 1 ;
 }
@@ -47,12 +45,12 @@
 }
 
 .cell {
-    -fx-background-color: black, white ;
+    -fx-background-color: black, white;
     -fx-background-insets: 0, 0 1 1 0 ;
 }
 .cell.on {
     -fx-background-color: black, red;
-    -fx-background-insets: 0, 0 1 1 0 ;
+    /*-fx-background-insets: 0, 0 1 1 0 ;*/
 }
 .cell.first-row {
     -fx-background-insets: 0, 1 1 1 0 ;
@@ -62,4 +60,13 @@
 }
 .cell.first-row.first-column {
     -fx-background-insets: 0, 1 ;
+}
+
+.result{
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.value{
+    -fx-text-fill: red;
 }

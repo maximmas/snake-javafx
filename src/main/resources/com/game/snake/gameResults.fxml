@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<?import javafx.geometry.Insets?>
+<Group xmlns="http://javafx.com/javafx"
+       fx:id="root"
+       xmlns:fx="http://javafx.com/fxml"
+       fx:controller="com.game.snake.ResultsController"
+>
+    <VBox alignment="CENTER_LEFT">
+        <padding>
+            <Insets left="150.0" top="70.0"/>
+        </padding>
+
+        <Label fx:id="title" styleClass="title">GAME RESULTS</Label>
+
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="20.0" top="30.0"/>
+            </padding>
+            <HBox>
+                <Label>Your score:</Label>
+                <Label fx:id="score"/>
+            </HBox>
+            <HBox>
+                <Label>Your time:</Label>
+                <Label fx:id="timer"/>
+            </HBox>
+        </VBox>
+
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="20.0"/>
+            </padding>
+            <Label styleClass="saveLabel">Enter your name to save result</Label>
+            <HBox spacing="10">
+                <TextField fx:id="name" prefColumnCount="10"></TextField>
+                <Button
+                        fx:id="saveButton"
+                        onAction="#onSaveButtonClick"
+                        styleClass="controls1"
+                        text="Save"
+                />
+            </HBox>
+
+            <Label styleClass="validation" fx:id="validation"/>
+
+        </VBox>
+
+        <Button
+                fx:id="returnButton"
+                onAction="#onReturnButtonClick"
+                styleClass="controls" text="Back to menu "
+        />
+
+    </VBox>
+</Group>

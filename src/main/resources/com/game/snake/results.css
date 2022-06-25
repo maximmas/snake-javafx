@@ -1,0 +1,16 @@
+#root{
+    -fx-font-size: 18px;
+}
+.title{
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: green;
+}
+
+.validation{
+    -fx-text-fill: red;
+}
+
+.saveLabel{
+    -fx-text-fill: blue;
+}

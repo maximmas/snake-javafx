@@ -15,13 +15,9 @@
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-
     <Button text="New Game" onAction="#onStartGameButtonClick"/>
     <Button text="Hall Of Fame" onAction="#onViewResultsButtonClick"/>
     <Button text="Exit" onAction="#onExitButtonClick"/>
-
 </VBox>
 
 
