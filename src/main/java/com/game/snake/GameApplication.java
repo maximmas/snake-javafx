@@ -53,10 +53,15 @@ public class GameApplication extends Application {
     int gameScore = 0;
 
     /**
-     *  Время игры
+     *  Макс длительность игры
+     */
+    int totalGameTime = 200;
+
+    /**
+     *  Обратный отчет времени игры
      *
      */
-    int timer = 200;
+    int timer = totalGameTime;
 
     /**
      *  Направление движения змеи
@@ -75,9 +80,9 @@ public class GameApplication extends Application {
 
     Stage primaryStage;
 
-    Label displayTimer;
-    Label displayScore;
-    Label displayEnd;
+    Label timerElement;
+    Label scoreElement;
+    Label endElement;
 
     int stageWidthPx = (totalColsNumber * cellSizePx) + (fieldPaddingPx * 2) + 200;
     int stageHeightPx = (totalRowsNumber * cellSizePx) + (fieldPaddingPx * 2);
@@ -93,23 +98,20 @@ public class GameApplication extends Application {
         menuController.setApp(this);
        primaryStage.setScene(menu);
        primaryStage.show();
-
     }
 
     public void setGameScene() throws IOException {
 
         FXMLLoader gameLoader = new FXMLLoader(GameApplication.class.getResource("game.fxml"));
         gameLoader.load();
-
         GameController gameController = gameLoader.getController();
         gameController.setApp(this);
-
         Group root = gameController.getRoot();
         field = gameController.getGameField();
 
-        displayTimer = gameController.getTimer();
-        displayScore = gameController.getScore();
-        displayEnd = gameController.getEnd();
+        timerElement = gameController.getTimer();
+        scoreElement = gameController.getScore();
+        endElement = gameController.getEnd();
 
         field.setPadding(new Insets(fieldPaddingPx, fieldPaddingPx , fieldPaddingPx, fieldPaddingPx));
         field.getStyleClass().addAll("container");
@@ -138,80 +140,88 @@ public class GameApplication extends Application {
         }
 
         Scene gameScene = new Scene(root, stageWidthPx ,stageHeightPx);
-
         gameScene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         primaryStage.setScene(gameScene);
-
         keysPressHandler(gameScene);
-
     }
 
-    public void runGame(){
 
+    public void startGame(){
+
+        // начальное положение
         setInitialSnakePosition();
         showSnake();
         showFruits();
-        displayScore();
+        showCurrentResults("score"); // show 0
 
         timerProcess = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 while(timer > 0 && isAlive){
                     timer--;
-                    displayTimer();
+                    showCurrentResults("timer");
                     try{
                         Thread.sleep(timerDelay);
                     } catch(Exception e){};
                 }
                 isAlive = false;
-//                System.out.println("Time is out! ");
-                displayEnd();
+                endGame();
             }
         });
-        timerProcess.start();
-
 
         fruitsProcess = new Thread(new Runnable() {
             @Override
             public void run() {
-
                 while(isAlive && timer > 0){
                         showFruits();
                     try{
                         Thread.sleep(fruitsDelay);
                     } catch(Exception e){};
                 }
-
             }
         });
-        fruitsProcess.start();
 
         snakeProcess = new Thread(new Runnable() {
-
             @Override
             public void run() {
-
                 while(isAlive && timer > 0){
                      snakeMakeStep();
                     try{
                         Thread.sleep(snakeDelay);
                     } catch(Exception e){};
                 }
-//                    System.out.println("End game !");
-                displayEnd();
-//                displayEnd.setText("Game over!");
+                endGame();
             }
         });
+
+        timerProcess.start();
+        fruitsProcess.start();
         snakeProcess.start();
     }
 
+    private void endGame(){
+        showCurrentResults("end");
+        setResultScene();
+    }
+
+    private void setResultScene(){
+
+    }
+
+    /**
+     *  Обработчик нажатия клавиш
+     *  Управление: up/down/left/right
+     *  q = stop
+     *
+     * @param scene
+     */
 
     private void keysPressHandler(Scene scene){
 
-//        field.requestFocus();
+        // передаем фокус клавиатуры на сетку
+        field.requestFocus();
 
-        scene.setOnKeyPressed(e -> {
+        field.setOnKeyPressed(e -> {
                         KeyCode key=e.getCode();
 
                         if(key.equals(KeyCode.UP)) {
@@ -232,7 +242,6 @@ public class GameApplication extends Application {
                             if(snakeMovementDirection != "right" ) {
                                 snakeMovementDirection = "left";
                             }
-
                         };
                         if(key.equals(KeyCode.RIGHT)) {
                             System.out.println("Right");
@@ -240,7 +249,6 @@ public class GameApplication extends Application {
                                 snakeMovementDirection = "right";
                             }
                         };
-
                         if(key.equals(KeyCode.Q)) {
                             isAlive = false;
                         };
@@ -248,36 +256,48 @@ public class GameApplication extends Application {
                     });
     }
 
+    /**
+     *  Отображение результатов в течении игры
+     *
+     * @param resultType
+     */
+    private void showCurrentResults(String resultType){
 
-    private void displayTimer(){
+        Label container = null;
+        String message = "";
+
+        if(resultType == "score") {
+            container = scoreElement;
+            message = String.valueOf(gameScore);
+        }
+
+        if(resultType == "timer") {
+            container = timerElement;
+            message = String.valueOf(timer);
+        }
+
+        if(resultType == "end") {
+            container = endElement;
+            message = "Game over";
+        }
+
+//        String finalMessage = message;
+//        Label finalContainer = container;
+        Label finalContainer = container;
+        String finalMessage = message;
         https://stackoverflow.com/questions/21083945/how-to-avoid-not-on-fx-application-thread-currentthread-javafx-application-th
-        Platform.runLater(new Runnable(){
+            Platform.runLater(new Runnable(){
             @Override
             public void run() {
-                displayTimer.setText(String.valueOf(timer));
-            }
-        });
-    }
-
-    private void displayScore(){
-        Platform.runLater(new Runnable(){
-            @Override
-            public void run() {
-                displayScore.setText(String.valueOf(gameScore));
-            }
-        });
-    }
-
-    private void displayEnd(){
-        Platform.runLater(new Runnable(){
-            @Override
-            public void run() {
-                displayEnd.setText("Game over !");
+                finalContainer.setText(finalMessage);
             }
         });
     }
 
 
+    /**
+     * Обработка шага змеи
+     */
     private void snakeMakeStep(){
 
         hideSnake();
@@ -306,7 +326,10 @@ public class GameApplication extends Application {
             nextCellY = snakeBodyYIndex[0] ;
         }
 
+        // проверка наезда на фрукт
         boolean isFruit = fruitEatHandler(nextCellX, nextCellY);
+        // проверка наезда на саму себя
+        boolean isSelfSnake = isSnake(nextCellX, nextCellY);
 
         if (isFruit) {
             snakeBodySize++;
@@ -325,13 +348,15 @@ public class GameApplication extends Application {
         snakeBodyXIndex[0] = nextCellX;
         snakeBodyYIndex[0] = nextCellY;
 
-        if ( isBorder()) {
+        if ( isBorder() || isSelfSnake) {
             isAlive = false;
+//            displayEnd();
         } else {
             showSnake();
         }
 
     }
+
 
     /**
      *  Проверка и обработка наезда на фрукт
@@ -340,8 +365,6 @@ public class GameApplication extends Application {
      */
     private boolean fruitEatHandler(int snakeHeadX, int snakeHeadY){
         boolean isFruit = false;
-
-
         for (int i = 0; i < fruitPosXIndex.length; i++){
 
             if (snakeHeadX == fruitPosXIndex[i] && snakeHeadY == fruitPosYIndex[i]){
@@ -349,7 +372,7 @@ public class GameApplication extends Application {
                 isFruit = true;
                  removeFruit(i);
                  gameScore++;
-                displayScore();
+                showCurrentResults("score");
             }
         }
         return isFruit;
@@ -500,6 +523,8 @@ public class GameApplication extends Application {
             snakeBodyYIndex[i] = initialSnakePosYIndex;
         }
     }
+
+
 
     public static void main(String[] args) {
         launch();

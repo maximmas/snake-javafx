@@ -12,38 +12,38 @@
 }
 
 .fruit.fruit0{
-    -fx-background-image: url("0.png");
+    -fx-background-image: url("images/0.png");
 }
 
 .fruit.fruit1{
-    -fx-background-image: url("1.png");
+    -fx-background-image: url("images/1.png");
 }
 .fruit.fruit2{
-    -fx-background-image: url("2.png");
+    -fx-background-image: url("images/2.png");
 }
 .fruit.fruit3{
-    -fx-background-image: url("3.png");
+    -fx-background-image: url("images/3.png");
 }
 .fruit.fruit4{
-    -fx-background-image: url("4.png");
+    -fx-background-image: url("images/4.png");
 }
 .fruit.fruit5{
-    -fx-background-image: url("5.png");
+    -fx-background-image: url("images/5.png");
 }
 .fruit.fruit6{
-    -fx-background-image: url("6.png");
+    -fx-background-image: url("images/6.png");
 }
 .fruit.fruit7{
-    -fx-background-image: url("7.png");
+    -fx-background-image: url("images/7.png");
 }
 .fruit.fruit8{
-    -fx-background-image: url("8.png");
+    -fx-background-image: url("images/8.png");
 }
 .fruit.fruit9{
-    -fx-background-image: url("9.png");
+    -fx-background-image: url("images/9.png");
 }
 .fruit.fruit10{
-    -fx-background-image: url("10.png");
+    -fx-background-image: url("images/10.png");
 }
 
 .cell {

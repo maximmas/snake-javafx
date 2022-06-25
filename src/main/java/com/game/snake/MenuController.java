@@ -30,7 +30,7 @@ public class MenuController {
     @FXML
     protected void onStartGameButtonClick() throws IOException {
         gameApp.setGameScene();
-        gameApp.runGame();
+        gameApp.startGame();
     }
 
     @FXML
